@@ -1,0 +1,6 @@
+:node-sname "sutil_edit"
+:name "sutil_edit"
+:lib-dirs '("deps")
+:app-include-dirs '("include")
+:project-include-dirs '("deps")
+:start-command "erl -sname sutil_edit"

@@ -1,0 +1,14 @@
+{application, sutil,
+ [
+  {description, "Some Utilities"},
+  {vsn, "1.0.0"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  erlang_localtime
+                 ]},
+  {modules, []},
+  {mod, { emb_app, []}},
+  {env, []}
+ ]}.
