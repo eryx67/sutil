@@ -8,7 +8,7 @@
                   stdlib,
                   erlang_localtime
                  ]},
-  {modules, []},
+  {modules, [sutil,sutil_date]},
   {mod, { emb_app, []}},
   {env, []}
  ]}.
