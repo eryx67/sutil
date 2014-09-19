@@ -9,7 +9,7 @@
 
 -behaviour(plain_fsm).
 
--export([start_link/2]).
+-export([start_link/2, message_type_header/0]).
 
 %% plain_fsm exports
 -export([data_vsn/0, code_change/3]).
@@ -25,6 +25,11 @@
                  | {username, string()}
                  | {password, string()}
                  | {ssl_options, none | [term()]}.
+
+-define(AMQP_MSG_TYPE_HEADER, <<"_msg_type_name_">>).
+
+message_type_header() ->
+    ?AMQP_MSG_TYPE_HEADER.
 
 -spec start_link(Rabbit::atom(), ServerSpecs::[[mq_spec()]]) -> {ok, pid()}.
 start_link(Rabbit, ServerSpecs) ->
