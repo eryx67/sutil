@@ -33,7 +33,7 @@ message_type_header() ->
 
 -spec start_link(Rabbit::atom(), ServerSpecs::[[mq_spec()]]) -> {ok, pid()}.
 start_link(Rabbit, ServerSpecs) ->
-    {ok, Rabbits} = application:get_env(usagi, rabbits),
+    Rabbits = application:get_env(usagi, rabbits, []),
     Rabbits1 = deepprops:set(Rabbit, ServerSpecs, Rabbits),
     application:set_env(usagi, rabbits, Rabbits1),
     application:set_env(amqp_client, prefer_ipv6, false),
