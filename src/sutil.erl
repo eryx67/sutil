@@ -9,6 +9,7 @@
 
 -compile({inline, [hex/1]}).
 
+-export([start_app_deps/1]).
 -export([wait_for/1]).
 -export([curry/2, rcurry/2]).
 -export(['->'/2, '->>'/2]).
@@ -24,6 +25,43 @@
 -include("../include/sutil.hrl").
 
 -type maybe(Ok, Error) :: {ok, Ok} | {error, Error}.
+
+%% @doc start application with its dependencies
+%% @end
+-spec start_app_deps(App::atom()) -> [StartedApplication::atom()].
+start_app_deps(App) ->
+    start_app_deps(App, []).
+
+start_app_deps(App, Started) ->
+    case application:load(App) of
+        ok ->
+            ok;
+        {error, {already_loaded, App}} ->
+            ok;
+        Error ->
+            Error
+    end,
+    DepApps = case application:get_key(App, applications) of
+                  undefined ->
+                      [];
+                  {ok, V} ->
+                      V
+              end,
+    DepApps1 = ordsets:from_list(DepApps),
+    ToStart = ordsets:subtract(DepApps1, Started),
+    Started1 = lists:foldl(fun (A, Acc) ->
+                                   start_app_deps(A, Acc)
+                           end, Started, ToStart),
+    ensure_started(App),
+    ordsets:union(Started1, DepApps1).
+
+ensure_started(App) ->
+    case application:start(App) of
+        ok ->
+            ok;
+        {error, {already_started, App}} ->
+            ok
+    end.
 
 wait_for(Pid) ->
     MRef= erlang:monitor(process, Pid),
