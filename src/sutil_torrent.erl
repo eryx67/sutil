@@ -7,7 +7,7 @@
 
 -module(sutil_torrent).
 
--export([integer_id/1, maybe_integer_id/1, binary_id/1]).
+-export([integer_id/1, maybe_integer_id/1, binary_id/1, hex_id/1]).
 -export([hexstr/1,hexstr_to_bin/1, is_hexstr/1]).
 
 -export_type([infohash/0]).
@@ -52,6 +52,9 @@ binary_id(ID) when is_integer(ID) ->
 binary_id(ID) when is_list(ID),
                    length(ID) == 20 ->
     list_to_binary(ID).
+
+hex_id(InfoHash) ->
+    io_lib:fwrite("~40.16.0b", [integer_id(InfoHash)]).
 
 hex(N) when N < 10 ->
     $0+N;
