@@ -9,7 +9,7 @@
 
 -compile({inline, [hex/1]}).
 
--export([start_app_deps/1]).
+-export([start_app_deps/1, run_jobs/1]).
 -export([wait_for/1]).
 -export([curry/2, rcurry/2]).
 -export(['->'/2, '->>'/2]).
@@ -25,6 +25,28 @@
 -include("../include/sutil.hrl").
 
 -type maybe(Ok, Error) :: {ok, Ok} | {error, Error}.
+
+%% @doc Runs _Funs_ in parallel and returns results
+%% @end
+-spec run_jobs(Funs::[function()]) -> [term()|{error, term()}].
+run_jobs(Funs) ->
+    Self = self(),
+    [wait_job_result(W) || W <- [spawn_job_worker(Self, F) || F <- Funs]].
+
+spawn_job_worker(Parent, Fun) ->
+    ExecF = case Fun of
+                {M, F, A} ->
+                    fun () -> erlang:apply(M, F, A) end;
+                _ when is_function(Fun, 0) ->
+                    Fun
+            end,
+    erlang:spawn_monitor(fun() -> Parent ! {self(), ExecF()} end).
+
+wait_job_result({Pid, Ref}) ->
+    receive
+        {'DOWN', Ref, _, _, normal} -> receive {Pid, Result} -> Result end;
+        {'DOWN', Ref, _, _, Reason} -> {error, Reason}
+    end.
 
 %% @doc start application with its dependencies
 %% @end
