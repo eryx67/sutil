@@ -135,20 +135,20 @@ publish_data(Recs, S=#state{handler=Hlr}) ->
     amq_publish_chunk(lists:flatten(Hlr(Recs)), S).
 
 amq_publish_chunk(Datas, S=#state{rabbit=Rabbit,
-                                  channel=Channel,
+                                  channel=ChannelName,
                                   exchange=Exchange,
                                   key=Key
                                  }) ->
     case sutil:maybe(
            fun () ->
-                   {ok, ChannelPid} = usagi_agent:get_channel(Rabbit, Channel),
-                   amqp_channel:wait_for_confirms(Channel, ?CONFIRM_TIMEOUT),
+                   {ok, ChannelPid} = usagi_agent:get_channel(Rabbit, ChannelName),
+                   amqp_channel:wait_for_confirms(ChannelPid, ?CONFIRM_TIMEOUT),
                    lists:foreach(fun ({Data, Opts, Props}) ->
                                          ok = usagi:publish(ChannelPid, Exchange, Key,
                                                             Data, Opts, Props)
                                  end,
                                  Datas),
-                   amqp_channel:wait_for_confirms_or_die(Channel, ?CONFIRM_TIMEOUT)
+                   amqp_channel:wait_for_confirms_or_die(ChannelPid, ?CONFIRM_TIMEOUT)
            end,
            fun (_) -> S end,
            fun (Error) ->
