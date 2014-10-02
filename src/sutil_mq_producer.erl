@@ -12,7 +12,7 @@
 
 -behaviour(gen_server).
 
--export([start_link/6, start_link/7, state/1, publish/2]).
+-export([start_link/6, start_link/7, state/1, publish/2, publish_async/2]).
 
 %% gen_server API
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -68,6 +68,9 @@ state(Pid) ->
 publish(Pid, Data) ->
     gen_server:call(Pid, {publish, Data}, infinity).
 
+publish_async(Pid, Data) ->
+    gen_server:cast(Pid, {publish, Data}).
+
 %% gen_server callbacks
 init({Rabbit, Channel, Exchange, Queue, Key, Handler}) ->
     {ExName, ExType, ExOpts} = Exchange,
@@ -102,6 +105,11 @@ handle_call({publish, Recs}, _From, State) ->
     {Ret, State1} = publish_data(Recs, State),
     {reply, Ret, State1}.
 
+handle_cast({publish, _Recs}, S=#state{amq_status=disconnected}) ->
+    {noreply, S};
+handle_cast({publish, Recs}, State) ->
+    {_, State1} = publish_data(Recs, State),
+    {noreply, State1};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
