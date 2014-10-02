@@ -132,7 +132,7 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 publish_data(Recs, S=#state{handler=Hlr}) ->
-    amq_publish_chunk([lists:flatten(Hlr(R)) || R <- Recs], S).
+    amq_publish_chunk(lists:flatten(Hlr(Recs)), S).
 
 amq_publish_chunk(Datas, S=#state{rabbit=Rabbit,
                                   channel=Channel,
