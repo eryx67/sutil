@@ -284,6 +284,8 @@ ensure_binary(L) when is_list(L) ->
 ensure_binary(B) when is_binary(B) ->
     B.
 
+ensure_list(A) when is_atom(A) ->
+    atom_to_list(A);
 ensure_list(L) when is_list(L) ->
     L;
 ensure_list(B) when is_binary(B) ->
