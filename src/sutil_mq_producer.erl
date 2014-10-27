@@ -23,7 +23,7 @@
 -include("../include/sutil.hrl").
 -include("../include/log.hrl").
 
--define(CONFIRM_TIMEOUT, 60000).
+-define(CONFIRM_TIMEOUT, 60).
 
 -type exchange_type() :: string().
 -type handler() :: fun((term()) -> [{term(), proplists:proplist(), proplists:proplist()}]).
@@ -142,7 +142,7 @@ amq_publish_chunk(Datas, S=#state{rabbit=Rabbit,
     case sutil:maybe(
            fun () ->
                    {ok, ChannelPid} = usagi_agent:get_channel(Rabbit, ChannelName),
-                   amqp_channel:wait_for_confirms(ChannelPid, ?CONFIRM_TIMEOUT),
+                   amqp_channel:wait_for_confirms(ChannelPid, 0),
                    lists:foreach(fun ({Data, Opts, Props}) ->
                                          ok = usagi:publish(ChannelPid, Exchange, Key,
                                                             Data, Opts, Props)
