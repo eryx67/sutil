@@ -134,7 +134,7 @@ handle_mq_message(Rabbit, Hlr, Msg, ContentType, ContentEncoding, Headers) ->
                         MsgType =
                             case lists:keysearch(sutil_mq:message_type_header(),
                                                  1,
-                                                 sutil:from_maybe(Headers, []) of
+                                                 sutil:from_maybe(Headers, [])) of
                                 false ->
                                     undefined;
                                 {value, {_, _, Type}} ->
