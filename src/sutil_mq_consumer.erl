@@ -132,7 +132,9 @@ loop(S=#state{rabbit=R,
 handle_mq_message(Rabbit, Hlr, Msg, ContentType, ContentEncoding, Headers) ->
     sutil:maybe(fun () ->
                         MsgType =
-                            case lists:keysearch(sutil_mq:message_type_header(), 1, Headers) of
+                            case lists:keysearch(sutil_mq:message_type_header(),
+                                                 1,
+                                                 sutil:from_maybe(Headers, []) of
                                 false ->
                                     undefined;
                                 {value, {_, _, Type}} ->
