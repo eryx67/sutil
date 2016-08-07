@@ -9,7 +9,7 @@
 
 -behaviour(plain_fsm).
 
--export([start_link/6, ack/0, reject/0]).
+-export([start_link/6, start_link/7, ack/0, reject/0]).
 
 %% plain_fsm exports
 -export([data_vsn/0, code_change/3]).
@@ -55,9 +55,20 @@ reject() ->
                  Exchange::{string(), exchange_type(), proplists:proplist()},
                  Queue::{string(), proplists:proplist()},
                  Key::string(),
-                 handler())
+                 Hanlder::handler())
                 -> {ok, pid()}.
 start_link(Rabbit, Channel, Exchange, Queue, Key, Handler) ->
+    start_link(Rabbit, Channel, Exchange, Queue, Key, Handler, infinity).
+
+-spec start_link(Rabbit::atom(), Channel::atom(),
+                 Exchange::{string(), exchange_type(), proplists:proplist()},
+                 Queue::{string(), proplists:proplist()},
+                 Key::string(),
+                 Handler::handler(),
+                 HandlerPrefetch::infinity | integer())
+                -> {ok, pid()}.
+start_link(Rabbit, Channel, Exchange, Queue, Key, Handler, HandlerPrefetch) ->
+
     {ExName, ExType, ExOpts} = Exchange,
     {QueName, QueOpts} = Queue,
     Pid = plain_fsm:spawn_link(?MODULE,
@@ -73,6 +84,11 @@ start_link(Rabbit, Channel, Exchange, Queue, Key, Handler) ->
                                                    key=Key
                                                   })
                                end),
+    case HandlerPrefetch of
+        infinity -> ok;
+        Prefetch ->
+            usagi_channel:qos(Channel, Prefetch)
+    end,
     {ok, Pid}.
 
 init(S=#state{channel_pid=undefined,
