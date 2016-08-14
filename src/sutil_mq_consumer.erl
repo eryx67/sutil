@@ -42,7 +42,8 @@
                 queue :: string(),
                 queue_opts = [] :: proplists:proplist(),
                 queue_tag :: term(),
-                key :: string()
+                key :: string(),
+                qos :: infinity | integer()
                }).
 
 ack() ->
@@ -82,7 +83,7 @@ start_link(Rabbit, Channel, Exchange, Queue, Key, Handler, HandlerPrefetch) ->
                                                    queue=QueName,
                                                    queue_opts=QueOpts,
                                                    key=Key
-                                                  }, HandlerPrefetch)
+                                                   qos=HandlerPrefetch})
                                end),
     {ok, Pid}.
 
@@ -94,8 +95,9 @@ init(S=#state{channel_pid=undefined,
               exchange_opts=ExOpts,
               queue=Queue,
               queue_opts=QueueOpts,
-              key=Key
-             }, HandlerPrefetch) ->
+              key=Key,
+              qos=HandlerPrefetch
+             }) ->
     usagi_agent:wait_rabbit(Rabbit, infinity),
     {ok, ChPid} = usagi_agent:get_channel(Rabbit, Channel),
     usagi:start_exchange(Channel, Exchange, ExType, ExOpts),
