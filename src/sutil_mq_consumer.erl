@@ -82,7 +82,7 @@ start_link(Rabbit, Channel, Exchange, Queue, Key, Handler, HandlerPrefetch) ->
                                                    exchange_opts=ExOpts,
                                                    queue=QueName,
                                                    queue_opts=QueOpts,
-                                                   key=Key
+                                                   key=Key,
                                                    qos=HandlerPrefetch})
                                end),
     {ok, Pid}.
