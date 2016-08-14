@@ -82,13 +82,8 @@ start_link(Rabbit, Channel, Exchange, Queue, Key, Handler, HandlerPrefetch) ->
                                                    queue=QueName,
                                                    queue_opts=QueOpts,
                                                    key=Key
-                                                  })
+                                                  }, HandlerPrefetch)
                                end),
-    case HandlerPrefetch of
-        infinity -> ok;
-        Prefetch ->
-            usagi_channel:qos(Channel, Prefetch)
-    end,
     {ok, Pid}.
 
 init(S=#state{channel_pid=undefined,
@@ -100,12 +95,17 @@ init(S=#state{channel_pid=undefined,
               queue=Queue,
               queue_opts=QueueOpts,
               key=Key
-             }) ->
+             }, HandlerPrefetch) ->
     usagi_agent:wait_rabbit(Rabbit, infinity),
     {ok, ChPid} = usagi_agent:get_channel(Rabbit, Channel),
     usagi:start_exchange(Channel, Exchange, ExType, ExOpts),
     usagi:start_queue(Channel, Queue, QueueOpts),
     usagi:bind_queue(Channel, Exchange, Queue, Key),
+    case HandlerPrefetch of
+        infinity -> ok;
+        Prefetch ->
+            usagi_channel:qos(Channel, Prefetch)
+    end,
     {ok, QT} = usagi:consume_queue(Channel, Queue, self()),
     erlang:monitor(process, ChPid),
     loop(S#state{channel_pid=ChPid,
